@@ -73,6 +73,21 @@ namespace DispenseChestTeleporter
 
         #region Patches
 
+        [HarmonyLib.HarmonyPatch(typeof(DispenseChest), "OnDestroy")]
+        [HarmonyLib.HarmonyPrefix()]
+        private static void DispenseChest_OnDestroy_Prefix(DispenseChest __instance)
+        {
+            int removed = 0;
+            foreach(ChestLink link in _ChestLinks.Where(l => l.InputChest == __instance || l.OutputChest == __instance).ToArray())
+            {
+                if (_ChestLinks.Remove(link))
+                    removed++;
+            }
+
+            if(removed > 0)
+                Plugin.PluginLogger.LogDebug($"Removed {removed} links when this Dispense Chest was destroyed.");
+        }
+
         [HarmonyLib.HarmonyPatch(typeof(DispenseChest), "PlayerInteraction")]
         [HarmonyLib.HarmonyPrefix()]
         private static bool DispenseChest_PlayerInteraction_Prefix(DispenseChest __instance, Controls.UserActions action, AutomationItemDispenser ____systemContainer)
