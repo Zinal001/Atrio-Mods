@@ -11,10 +11,13 @@ namespace TorchEnhancer
 
         [HarmonyLib.HarmonyPatch(typeof(RechargeableTorch), "Update")]
         [HarmonyLib.HarmonyPrefix()]
-        private static bool RechargeableTorch_OnUpdate_Prefix(RechargeableTorch __instance, bool ____torchActive, ref float ____startRange, ref float ____startIntensity)
+        private static bool RechargeableTorch_OnUpdate_Prefix(RechargeableTorch __instance, PlayerController ____player, bool ____torchActive, ref float ____startRange, ref float ____startIntensity, float ____timeRemaining, ILightSystem ____lightSystem)
         {
             if(__instance.IsEnabled && ____torchActive)
             {
+                if (____lightSystem.IsNonMovingLightNear(____player.transform.position) || ____timeRemaining <= 0f)
+                    return true;
+
                 ____startRange = Plugin.Instance.TorchRange.Value;
                 ____startIntensity = Plugin.Instance.TorchIntensity.Value;
 
@@ -22,7 +25,7 @@ namespace TorchEnhancer
                 return false;
             }
 
-            return false;
+            return true;
         }
     }
 }
