@@ -1,18 +1,17 @@
 ﻿using Isto.Atrio;
 using Isto.Atrio.AIBehaviors;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UIElements;
 
 namespace BasicQoL
 {
     static class Patches
     {
         private static System.Reflection.MethodInfo FoodInRange_TryGetDisplayObjectForHarvestable_Method = HarmonyLib.AccessTools.Method(typeof(FoodInRange), "TryGetDisplayObjectForHarvestable");
+        private static Dictionary<PickerPalSleep, Vector3> _LastSleepFoodPositions = new Dictionary<PickerPalSleep, Vector3>();
+
 
         [HarmonyLib.HarmonyPatch(typeof(PickerPalSleep), "GetFoodPosition")]
         [HarmonyLib.HarmonyPostfix()]
@@ -20,8 +19,17 @@ namespace BasicQoL
         {
             if(Configs.EnhancePickerPalPathFinding.Value)
             {
-                Vector3 closestPosition = possiblePositions.OrderBy(p => Vector3.Distance(__instance.transform.position, p)).FirstOrDefault();
-                __result = closestPosition;
+                List<Vector3> byDist = possiblePositions.OrderBy(p => Vector3.Distance(__instance.transform.position, p)).ToList();
+
+                foreach(Vector3 position in byDist)
+                {
+                    if(!_LastSleepFoodPositions.ContainsKey(__instance) || _LastSleepFoodPositions[__instance] != position)
+                    {
+                        __result = position;
+                        _LastSleepFoodPositions[__instance] = position;
+                        break;
+                    }
+                }
             }
         }
 
@@ -45,20 +53,28 @@ namespace BasicQoL
                             return false;
                         }
                     }
+                }
 
-                    if (!____foodPositionsBuffer.Any())
-                    {
-                        foodPosition = Vector3.zero;
-                        __result = false;
-                        return false;
-                    }
+                if (!____foodPositionsBuffer.Any())
+                {
+                    foodPosition = Vector3.zero;
+                    __result = false;
+                    return false;
+                }
 
-                    Vector3 fromPos = __instance.homePosition.Value;
-                    if (___agent != null)
-                        fromPos = ___agent.transform.position;
+                Vector3 fromPos = __instance.homePosition.Value;
+                if (___agent != null)
+                    fromPos = ___agent.transform.position;
 
-                    foodPosition = ____foodPositionsBuffer.OrderBy(p => Vector3.Distance(fromPos, p)).FirstOrDefault();
+                foodPosition = ____foodPositionsBuffer.OrderBy(p => Vector3.Distance(fromPos, p)).FirstOrDefault();
 
+                List<Vector3> foodPositions = ____foodPositionsBuffer.OrderBy(p => Vector3.Distance(fromPos, p)).ToList();
+
+                if (___agent == null || !___agent.enabled)
+                    foodPositions.RemoveRange(1, foodPositions.Count - 1);
+
+                foreach(Vector3 pos in foodPositions)
+                {
                     object[] methodArgs = new object[] { foodPosition, Vector3.zero };
                     if (UnityUtils.IsWorldPositionOnScreen(foodPosition, Camera.main) && (bool)FoodInRange_TryGetDisplayObjectForHarvestable_Method.Invoke(__instance, methodArgs))
                         foodPosition = (Vector3)methodArgs[1];
@@ -67,12 +83,13 @@ namespace BasicQoL
                     {
                         NavMeshPath path = new NavMeshPath();
                         __result = ___agent.CalculatePath(foodPosition + __instance.positionOffset, path);
-                        return false;
+                        if(__result)
+                            return false;
                     }
+                }                
 
-                    __result = true;
-                    return false;
-                }
+                __result = true;
+                return false;
             }
 
             return true;
