@@ -2,7 +2,7 @@
 
 namespace TorchEnhancer
 {
-    [BepInPlugin("tech.zinals.atrio.torchenhancer", "Torch Enhancer", "1.0.0")]
+    [BepInPlugin("tech.zinals.atrio.torchenhancer", "Torch Enhancer", "1.0.1")]
     public class Plugin : BaseUnityPlugin
     {
         internal static Plugin Instance { get; private set; }
