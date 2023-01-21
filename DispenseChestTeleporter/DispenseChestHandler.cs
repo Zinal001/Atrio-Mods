@@ -73,9 +73,9 @@ namespace DispenseChestTeleporter
 
         #region Patches
 
-        [HarmonyLib.HarmonyPatch(typeof(DispenseChest), "OnDestroy")]
+        [HarmonyLib.HarmonyPatch(typeof(DispenseChest), "DoPickupAction")]
         [HarmonyLib.HarmonyPrefix()]
-        private static void DispenseChest_OnDestroy_Prefix(DispenseChest __instance)
+        private static void DispenseChest_DoPickupAction_Prefix(DispenseChest __instance)
         {
             int removed = 0;
             foreach(ChestLink link in _ChestLinks.Where(l => l.InputChest == __instance || l.OutputChest == __instance).ToArray())
@@ -148,8 +148,6 @@ namespace DispenseChestTeleporter
                         Plugin.PluginLogger.LogDebug($"OnDataLoadComplete: {__instance.transform.position}. IS OUTPUT");
                     }
                 }
-                else
-                    Plugin.PluginLogger.LogDebug($"OnDataLoadComplete: {__instance.transform.position}. NONE");
 
                 _ChestsLoaded[__instance] = true;
             }

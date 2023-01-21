@@ -3,7 +3,7 @@ using System.IO;
 
 namespace DispenseChestTeleporter
 {
-    [BepInPlugin("tech.zinals.atrio.dispensechestteleporter", "Dispense Chest Teleporter", "1.0.0")]
+    [BepInPlugin("tech.zinals.atrio.dispensechestteleporter", "Dispense Chest Teleporter", "1.0.1")]
     public class Plugin : BaseUnityPlugin
     {
         internal static string PluginLocation { get; private set; }

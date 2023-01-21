@@ -2,7 +2,7 @@
 
 namespace LightbulbEnhancer
 {
-    [BepInPlugin("tech.zinals.atrio.lightbulbenhancer", "Lightbulb Enhancer", "1.0.0")]
+    [BepInPlugin("tech.zinals.atrio.lightbulbenhancer", "Lightbulb Enhancer", "1.0.2")]
     public class Plugin : BaseUnityPlugin
     {
         internal static Plugin Instance { get; private set; }
@@ -19,7 +19,7 @@ namespace LightbulbEnhancer
 
         private void Awake()
         {
-            _Harmony = new HarmonyLib.Harmony("tech.zinals.atrio.torchenhancer");
+            _Harmony = new HarmonyLib.Harmony("tech.zinals.atrio.lighbulbenhancer");
             _Harmony.PatchAll(typeof(Patches));
         }
     }
