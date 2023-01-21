@@ -141,7 +141,8 @@ namespace DispenseChestTeleporter
                         link.InputAutomationDispenser = ____systemContainer;
                         Plugin.PluginLogger.LogDebug($"OnDataLoadComplete: {__instance.transform.position}. IS INPUT");
                     }
-                    else
+
+                    if(link.OutputPosition.Equals(__instance.transform.position))
                     {
                         link.OutputChest = __instance;
                         link.OutputAutomationDispenser = ____systemContainer;

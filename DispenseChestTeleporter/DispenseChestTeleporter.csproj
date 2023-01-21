@@ -29,4 +29,8 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(OutputPath)DispenseChestTeleporter.dll&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\DispenseChestTeleporter\DispenseChestTeleporter.dll&quot;&#xD;&#xA;copy &quot;$(OutputPath)DispenseChestTeleporter.pdb&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\DispenseChestTeleporter\DispenseChestTeleporter.pdb&quot;" />
+  </Target>
 </Project>
