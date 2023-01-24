@@ -2,7 +2,7 @@
 
 namespace BasicQoL
 {
-    [BepInPlugin("tech.zinals.atrio.basicqol", "Basic QoL Improvements", "1.0.1")]
+    [BepInPlugin("tech.zinals.atrio.basicqol", "Basic QoL Improvements", "1.0.2")]
     public class Plugin : BaseUnityPlugin
     {
         private HarmonyLib.Harmony _Harmony;

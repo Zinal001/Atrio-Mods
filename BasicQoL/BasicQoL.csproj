@@ -11,9 +11,9 @@
 
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
-    <PackageReference Include="BepInEx.Unity" Version="6.0.0-*" IncludeAssets="compile" />
+    <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
-	<PackageReference Include="UnityEngine.Modules" Version="2020.3.37" IncludeAssets="compile" />
+    <PackageReference Include="UnityEngine.Modules" Version="2020.3.37" IncludeAssets="compile" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
@@ -23,12 +23,18 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\Atrio_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <EmbedInteropTypes></EmbedInteropTypes>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\Atrio_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <EmbedInteropTypes></EmbedInteropTypes>
+      <Private>False</Private>
     </Reference>
     <Reference Include="BehaviorDesigner.Runtime">
       <HintPath>G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\Atrio_Data\Managed\BehaviorDesigner.Runtime.dll</HintPath>
+      <EmbedInteropTypes></EmbedInteropTypes>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   
