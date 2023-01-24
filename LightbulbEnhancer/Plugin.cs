@@ -2,7 +2,7 @@
 
 namespace LightbulbEnhancer
 {
-    [BepInPlugin("tech.zinals.atrio.lightbulbenhancer", "Lightbulb Enhancer", "1.0.2")]
+    [BepInPlugin("tech.zinals.atrio.lightbulbenhancer", "Lightbulb Enhancer", "1.0.3")]
     public class Plugin : BaseUnityPlugin
     {
         internal static Plugin Instance { get; private set; }

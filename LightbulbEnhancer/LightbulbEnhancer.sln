@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LightbulbEnhancer", "LightbulbEnhancer.csproj", "{3EE77785-D2F3-4065-8A88-CD4F8D559528}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LightbulbEnhancer", "LightbulbEnhancer.csproj", "{CF1D34B4-B1BE-4C34-88DA-F52CACB11BBC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3EE77785-D2F3-4065-8A88-CD4F8D559528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3EE77785-D2F3-4065-8A88-CD4F8D559528}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3EE77785-D2F3-4065-8A88-CD4F8D559528}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3EE77785-D2F3-4065-8A88-CD4F8D559528}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF1D34B4-B1BE-4C34-88DA-F52CACB11BBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF1D34B4-B1BE-4C34-88DA-F52CACB11BBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF1D34B4-B1BE-4C34-88DA-F52CACB11BBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF1D34B4-B1BE-4C34-88DA-F52CACB11BBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {2E09AE15-B0C6-453C-8260-E651ED93E0C5}
+		SolutionGuid = {3A97023C-A495-480E-96E0-D96F4FEB46F9}
 	EndGlobalSection
 EndGlobal
