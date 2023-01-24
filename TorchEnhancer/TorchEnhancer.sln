@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TorchEnhancer", "TorchEnhancer.csproj", "{F523AD7F-5A2B-4FF9-860C-0792BCD282DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TorchEnhancer", "TorchEnhancer.csproj", "{B17A8194-4DD2-4DA0-ABBF-3AA0B0D9FCA8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F523AD7F-5A2B-4FF9-860C-0792BCD282DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F523AD7F-5A2B-4FF9-860C-0792BCD282DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F523AD7F-5A2B-4FF9-860C-0792BCD282DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F523AD7F-5A2B-4FF9-860C-0792BCD282DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B17A8194-4DD2-4DA0-ABBF-3AA0B0D9FCA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B17A8194-4DD2-4DA0-ABBF-3AA0B0D9FCA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B17A8194-4DD2-4DA0-ABBF-3AA0B0D9FCA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B17A8194-4DD2-4DA0-ABBF-3AA0B0D9FCA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {A8F9F73F-093F-4645-9CAC-B721C0A926C4}
+		SolutionGuid = {BB89F4D6-BFE1-4872-99BD-EAC79EDABFA3}
 	EndGlobalSection
 EndGlobal
