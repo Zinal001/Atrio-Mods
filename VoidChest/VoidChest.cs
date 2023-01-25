@@ -8,6 +8,12 @@ namespace VoidChest
 {
     public class VoidChest : ScrapChest, IActivatable, IActionOnPickup
     {
+        private static Color TintColor = new Color(0.5f, 0, 0);
+        private static Texture2D _Texture;
+        private static Sprite _TopSprite = null;
+        private static Sprite _LeftSprite = null;
+        private static Sprite _RightSprite = null;
+
         internal static AdvancedItem Item { get; set; }
         internal static AdvancedItem ScrapChestItem { get; set; }
 
@@ -16,6 +22,44 @@ namespace VoidChest
             pileCount = 1;
             itemPile = new ItemPile(Item, 1);
             base.Awake();
+
+            if(_Texture == null)
+            {
+                _Texture = new Texture2D(2, 2);
+                if (!_Texture.LoadImage(System.IO.File.ReadAllBytes(System.IO.Path.Combine(Glob.PluginLocation, "Resources", "VoidChest_SpriteSheet.png"))))
+                    _Texture = null;
+            }
+
+            if(_Texture != null)
+            {
+                foreach (SpriteRenderer renderer in gameObject.GetComponentsInChildren<SpriteRenderer>(true))
+                {
+                    if (renderer.gameObject.name == "img_top")
+                    {
+                        if (_TopSprite == null)
+                            _TopSprite = Sprite.Create(_Texture, renderer.sprite.rect, new Vector2(1, 0), renderer.sprite.pixelsPerUnit, 0, SpriteMeshType.FullRect, Vector4.zero, true);
+
+                        if (_TopSprite != null)
+                            renderer.sprite = _TopSprite;
+                    }
+                    else if (renderer.gameObject.name == "img_left")
+                    {
+                        if (_LeftSprite == null)
+                            _LeftSprite = Sprite.Create(_Texture, renderer.sprite.rect, new Vector2(1, 0), renderer.sprite.pixelsPerUnit, 0, SpriteMeshType.FullRect, Vector4.zero, true);
+
+                        if (_LeftSprite != null)
+                            renderer.sprite = _LeftSprite;
+                    }
+                    else if (renderer.gameObject.name == "img_right")
+                    {
+                        if (_RightSprite == null)
+                            _RightSprite = Sprite.Create(_Texture, renderer.sprite.rect, new Vector2(0, 0), renderer.sprite.pixelsPerUnit, 0, SpriteMeshType.FullRect, Vector4.zero, true);
+
+                        if (_RightSprite != null)
+                            renderer.sprite = _RightSprite;
+                    }
+                }
+            }
         }
 
         public new void Activate()

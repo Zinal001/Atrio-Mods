@@ -54,7 +54,23 @@
     </Reference>
   </ItemGroup>
   
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="Resources\ScrapChest_Icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\VoidChest_Icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\VoidChest_SpriteSheet.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(OutputPath)VoidChest.dll&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\VoidChest\VoidChest.dll&quot;&#xD;&#xA;copy &quot;$(OutputPath)VoidChest.pdb&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\VoidChest\VoidChest.pdb&quot;&#xD;&#xA;copy &quot;$(OutputPath)CModLib.dll&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\VoidChest\CModLib.dll&quot;&#xD;&#xA;copy &quot;$(OutputPath)CModLib.pdb&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\VoidChest\CModLib.pdb&quot;" />
+    <Exec Command="copy &quot;$(OutputPath)VoidChest.dll&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\VoidChest\VoidChest.dll&quot;&#xD;&#xA;copy &quot;$(OutputPath)VoidChest.pdb&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\VoidChest\VoidChest.pdb&quot;&#xD;&#xA;copy &quot;$(OutputPath)CModLib.dll&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\VoidChest\CModLib.dll&quot;&#xD;&#xA;copy &quot;$(OutputPath)CModLib.pdb&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\VoidChest\CModLib.pdb&quot;&#xD;&#xA;copy &quot;$(OutputPath)Resources\VoidChest_SpriteSheet.png&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\VoidChest\Resources\VoidChest_SpriteSheet.png&quot;&#xD;&#xA;copy &quot;$(OutputPath)Resources\VoidChest_Icon.png&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\VoidChest\Resources\VoidChest_Icon.png&quot;" />
   </Target>
 </Project>

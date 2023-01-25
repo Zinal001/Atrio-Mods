@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace VoidChest
 {
-    [BepInPlugin("tech.zinals.atrio.voidchest", "Void Chest", "1.0.0")]
+    [BepInPlugin("tech.zinals.atrio.voidchest", "Void Chest", "1.0.1")]
     public class Plugin : BaseUnityPlugin
     {
         private HarmonyLib.Harmony _Harmony;
@@ -13,7 +13,8 @@ namespace VoidChest
         public Plugin()
         {
             Glob.Logger = Logger;
-            Glob.SaveManager = new SaveManager(System.Reflection.Assembly.GetExecutingAssembly());
+            Glob.PluginLocation = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            Glob.SaveManager = new SaveManager(Glob.PluginLocation);
             Glob.VoidChestSaveData = Glob.SaveManager.RegisterSimpleList<Vector3>("VoidChests");
         }
 

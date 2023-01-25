@@ -9,6 +9,7 @@ namespace VoidChest
     internal static class Glob
     {
         internal static BepInEx.Logging.ManualLogSource Logger { get; set; }
+        internal static String PluginLocation { get; set; }
         internal static SaveManager SaveManager { get; set; }
         internal static SimpleListSaveData<Vector3> VoidChestSaveData { get; set; }
 

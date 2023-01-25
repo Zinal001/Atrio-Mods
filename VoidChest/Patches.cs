@@ -22,6 +22,10 @@ namespace VoidChest
 
         private static GameObject _VoidChestObj = null;
         private static Zenject.DiContainer _DiContainer = null;
+
+        private static Texture2D _VoidChestItemTexture;
+        private static Sprite _VoidChestItemSprite;
+
         private static void CreateVoidChestItem(MasterItemList itemList, AdvancedItem scrapChestItem)
         {
             //Create a new item based on the item for ScrapChest
@@ -33,15 +37,27 @@ namespace VoidChest
             voidChestItem.flavorTextLoc = (I2.Loc.LocalizedString)"VOIDCHEST_DESCRIPTION";
             voidChestItem.interactToolTipTextLoc = (I2.Loc.LocalizedString)"VOIDCHEST_TOOLTIP";
 
+            if (_VoidChestItemSprite == null)
+            {
+                _VoidChestItemTexture = new Texture2D(voidChestItem.icon.texture.width, voidChestItem.icon.texture.height);
+                if(_VoidChestItemTexture.LoadImage(System.IO.File.ReadAllBytes(System.IO.Path.Combine(Glob.PluginLocation, "Resources", "VoidChest_Icon.png"))))
+                    _VoidChestItemSprite = Sprite.Create(_VoidChestItemTexture, voidChestItem.icon.rect, voidChestItem.icon.pivot);
+            }
+
+            if(_VoidChestItemSprite != null)
+                voidChestItem.icon = _VoidChestItemSprite;
+
+
             //Create a new recipe based on the Scrap Chest recipe.
             Recipe scrapRecipe = scrapChestItem.GetRecipe();
-            voidChestItem.SetRecipe(new Recipe() { 
-                inputs = scrapRecipe.inputs,
-                outputs = new List<ItemPile>() { 
-                    new ItemPile(voidChestItem, 1)
-                },
-                cookTime = scrapRecipe.cookTime
-            });
+
+            Recipe newRecipe = ScriptableObject.CreateInstance<Recipe>();
+            newRecipe.inputs = scrapRecipe.inputs;
+            newRecipe.outputs = new List<ItemPile>() {
+                new ItemPile(voidChestItem, 1)
+            };
+            newRecipe.cookTime = scrapRecipe.cookTime;
+            voidChestItem.SetRecipe(newRecipe);
 
             //Remove the ScrapChest MonoBehaviour and add the VoidChest behaviour instead!
             ScrapChest sc = voidChestItem.prefab.GetComponent<ScrapChest>();
@@ -147,13 +163,6 @@ namespace VoidChest
 
                 _VoidChestObj = null;
             }
-        }
-
-        [HarmonyLib.HarmonyPatch(typeof(ItemPlaceCompleteState), "Enter")]
-        [HarmonyLib.HarmonyPostfix()]
-        private static void ItemPlaceCompleteState_Enter_Postfix(ItemPlaceCompleteState __instance)
-        {
-            Glob.Logger.LogInfo($"ItemPlaceCompleteState - Enter {__instance}");
         }
 
         [HarmonyLib.HarmonyPatch(typeof(UICraftingTab), "Setup")]
