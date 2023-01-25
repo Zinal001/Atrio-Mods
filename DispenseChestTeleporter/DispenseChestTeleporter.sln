@@ -5,6 +5,8 @@ VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DispenseChestTeleporter", "DispenseChestTeleporter.csproj", "{0F275197-791C-41A6-A1E8-C001BF28C4E4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CModLib", "..\CModLib\CModLib.csproj", "{6CA1DC28-A7A0-4EB9-B259-D788155BF951}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0F275197-791C-41A6-A1E8-C001BF28C4E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F275197-791C-41A6-A1E8-C001BF28C4E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F275197-791C-41A6-A1E8-C001BF28C4E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CA1DC28-A7A0-4EB9-B259-D788155BF951}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CA1DC28-A7A0-4EB9-B259-D788155BF951}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CA1DC28-A7A0-4EB9-B259-D788155BF951}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CA1DC28-A7A0-4EB9-B259-D788155BF951}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

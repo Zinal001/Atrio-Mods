@@ -21,6 +21,10 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\CModLib\CModLib.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\Atrio_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
@@ -32,6 +36,6 @@
   </ItemGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(OutputPath)DispenseChestTeleporter.dll&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\DispenseChestTeleporter\DispenseChestTeleporter.dll&quot;&#xD;&#xA;copy &quot;$(OutputPath)DispenseChestTeleporter.pdb&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\DispenseChestTeleporter\DispenseChestTeleporter.pdb&quot;" />
+    <Exec Command="copy &quot;$(OutputPath)DispenseChestTeleporter.dll&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\DispenseChestTeleporter\DispenseChestTeleporter.dll&quot;&#xD;&#xA;copy &quot;$(OutputPath)DispenseChestTeleporter.pdb&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\DispenseChestTeleporter\DispenseChestTeleporter.pdb&quot;&#xD;&#xA;copy &quot;$(OutputPath)CModLib.dll&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\DispenseChestTeleporter\CModLib.dll&quot;&#xD;&#xA;copy &quot;$(OutputPath)CModLib.pdb&quot; &quot;G:\SteamLibrary\steamapps\common\Atrio The Dark Wild\BepInEx\plugins\DispenseChestTeleporter\CModLib.pdb&quot;" />
   </Target>
 </Project>

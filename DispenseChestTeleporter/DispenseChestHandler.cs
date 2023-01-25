@@ -11,10 +11,17 @@ namespace DispenseChestTeleporter
     static class DispenseChestHandler
     {
         internal static int GameSaveSlot = -1;
+        internal static int GameSaveSlotBefore = -1;
 
         private static readonly System.Reflection.MethodInfo AutomationItemDispenser_TryDropItem_Method = HarmonyLib.AccessTools.DeclaredMethod(typeof(AutomationItemDispenser), "TryDropItem");
+        private static readonly System.Reflection.MethodInfo StandardTutorialAction_UpdateTaskList_Method = HarmonyLib.AccessTools.Method(typeof(StandardTutorialAction), "UpdateTaskList");
+        private static readonly System.Reflection.MethodInfo StandardTutorialAction_OnHeartTransitionComplete_Method = HarmonyLib.AccessTools.Method(typeof(StandardTutorialAction), "OnHeartTransitionComplete");
+        private static readonly System.Reflection.MethodInfo StandardTutorialAction_OnHeartTransitionStart_Method = HarmonyLib.AccessTools.Method(typeof(StandardTutorialAction), "OnHeartTransitionStart");
 
-        private static List<ChestLink> _ChestLinks = new List<ChestLink>();
+        private static readonly System.Reflection.EventInfo HeartBoxTransition_TransitionComplete_Event = typeof(HeartBoxTransition).GetEvent("TransitionComplete");
+        private static readonly System.Reflection.EventInfo HeartBoxController_EnteringState_Event = typeof(HeartBoxController).GetEvent("EnteringState");
+
+        //private static List<ChestLink> _ChestLinks = new List<ChestLink>();
 
         private static DispenseChest _LastChestInteracted = null;
         private static DateTime _LastChestInteractedAt = DateTime.MinValue;
@@ -22,45 +29,90 @@ namespace DispenseChestTeleporter
         private static AutomationItemDispenser _CurrentAutomationDispenser = null;
         private static UIPlayerMessageDisplay _PlayerMessageDisplay;
 
-        private static Dictionary<DispenseChest, bool> _ChestsLoaded = null;
+        //private static Dictionary<DispenseChest, bool> _ChestsLoaded = null;
+        private static Dictionary<AutomationItemDispenser, bool> _DispensersLoaded = null;
+
+        private static CModLib.SaveLoad.SaveManager _SaveManager;
+        private static CModLib.SaveLoad.SimpleListSaveData<ChestLink> _ChestLinks;
+
+        internal static void Init(String pluginLocation)
+        {
+            _SaveManager = new CModLib.SaveLoad.SaveManager(pluginLocation);
+            _ChestLinks = _SaveManager.RegisterSimpleList<ChestLink>("ChestLinks");
+        }
 
         private static void SaveData(int slotNumber)
         {
-            String json = Newtonsoft.Json.JsonConvert.SerializeObject(_ChestLinks, Newtonsoft.Json.Formatting.Indented);
-            String filename = Path.Combine(Plugin.PluginLocation, $"{slotNumber}_ChestLinks.json");
-            File.WriteAllText(filename, json);
-            Plugin.PluginLogger.LogDebug($"Saved {_ChestLinks.Count} chestlinks to file: {filename}.");
+            _SaveManager.SaveAll(slotNumber);
+            Plugin.Log.LogDebug($"Saved {_ChestLinks.Count} chestlinks.");
+
+            if(GameSaveSlotBefore != -1)
+            {
+                String filename = Path.Combine(Plugin.PluginLocation, $"{GameSaveSlotBefore}_ChestLinks.json");
+                if (File.Exists(filename))
+                {
+                    File.Move(filename, Path.Combine(Plugin.PluginLocation, $"{GameSaveSlotBefore}_ChestLinks_Backup.json"));
+                    Plugin.Log.LogDebug($"Moved old game data from slot {GameSaveSlotBefore} to new saveload system.");
+                }
+            }            
         }
 
         private static void LoadData(int slotNumber)
         {
+            _SaveManager.LoadAll(slotNumber);
+
             String filename = Path.Combine(Plugin.PluginLocation, $"{slotNumber}_ChestLinks.json");
             if (File.Exists(filename))
             {
                 String json = File.ReadAllText(filename);
-                List<ChestLink> links = Newtonsoft.Json.JsonConvert.DeserializeObject<List<ChestLink>>(json);
+                List<OldChestLink> links = Newtonsoft.Json.JsonConvert.DeserializeObject<List<OldChestLink>>(json);
                 if (links != null)
                 {
-                    _ChestLinks = links;
-                    Plugin.PluginLogger.LogDebug($"Loaded {_ChestLinks.Count} chestlinks from file: {filename}.");
+                    foreach(OldChestLink link in links)
+                    {
+                        if (!_ChestLinks.Any(c => c.InputPosition == link.InputPosition && c.OutputPosition != link.OutputPosition))
+                            _ChestLinks.Add(new ChestLink() { InputPosition = link.InputPosition, OutputPosition = link.OutputPosition });
+                    }
                 }
             }
 
-            _ChestsLoaded = new Dictionary<DispenseChest, bool>();
+            RemoveDuplicateLinks();
+            Plugin.Log.LogDebug($"Loaded {_ChestLinks.Count} chestlinks.");
+
+            _DispensersLoaded = new Dictionary<AutomationItemDispenser, bool>();
+        }
+
+        private static void RemoveDuplicateLinks()
+        {
+            int removed = 0;
+            foreach(ChestLink link in _ChestLinks.ToArray())
+            {
+                ChestLink[] similarLinks = _ChestLinks.Where(c => c.InputPosition == link.InputPosition && c.OutputPosition == link.OutputPosition).ToArray();
+                if(similarLinks.Length > 1)
+                {
+                    for (int i = 1; i < similarLinks.Length; i++)
+                    {
+                        if (_ChestLinks.Remove(similarLinks[i]))
+                            removed++;
+                    }
+                }
+            }
+
+            if(removed > 0)
+                Plugin.Log.LogDebug($"Removed {removed} duplicate links.");
         }
 
         private static void SetupTeleport(DispenseChest outputChest, AutomationItemDispenser outputAutomationDispenser)
         {
-            ChestLink link = _ChestLinks.FirstOrDefault(c => c.InputChest == _CurrentInput && c.OutputChest == outputChest);
+            ChestLink link = _ChestLinks.FirstOrDefault(c => c.InputAutomationDispenser == _CurrentAutomationDispenser && c.OutputAutomationDispenser == outputAutomationDispenser);
+
             if (link == null)
             {
                 _ChestLinks.Add(new ChestLink()
                 {
                     InputPosition = _CurrentInput.transform.position,
                     OutputPosition = outputChest.transform.position,
-                    InputChest = _CurrentInput,
                     InputAutomationDispenser = _CurrentAutomationDispenser,
-                    OutputChest = outputChest,
                     OutputAutomationDispenser = outputAutomationDispenser
                 });
             }
@@ -75,17 +127,18 @@ namespace DispenseChestTeleporter
 
         [HarmonyLib.HarmonyPatch(typeof(DispenseChest), "DoPickupAction")]
         [HarmonyLib.HarmonyPrefix()]
-        private static void DispenseChest_DoPickupAction_Prefix(DispenseChest __instance)
+        private static void DispenseChest_DoPickupAction_Prefix(DispenseChest __instance, AutomationItemDispenser ____systemContainer)
         {
             int removed = 0;
-            foreach(ChestLink link in _ChestLinks.Where(l => l.InputChest == __instance || l.OutputChest == __instance).ToArray())
+
+            foreach (ChestLink link in _ChestLinks.Where(c => c.InputAutomationDispenser == ____systemContainer || c.OutputAutomationDispenser == ____systemContainer))
             {
                 if (_ChestLinks.Remove(link))
                     removed++;
             }
 
             if(removed > 0)
-                Plugin.PluginLogger.LogDebug($"Removed {removed} links when this Dispense Chest was destroyed.");
+                Plugin.Log.LogDebug($"Removed {removed} links when this Dispense Chest was destroyed.");
         }
 
         [HarmonyLib.HarmonyPatch(typeof(DispenseChest), "PlayerInteraction")]
@@ -104,7 +157,7 @@ namespace DispenseChestTeleporter
                 {
                     _CurrentInput = __instance;
                     _CurrentAutomationDispenser = ____systemContainer;
-                    Plugin.PluginLogger.LogDebug($"Input specified!");
+                    Plugin.Log.LogDebug($"Input specified!");
 
                     if (_PlayerMessageDisplay != null)
                         _PlayerMessageDisplay.DisplayMessage("Input specified successuly, select output Dispense Chest.", 6f);
@@ -114,7 +167,7 @@ namespace DispenseChestTeleporter
                     SetupTeleport(__instance, ____systemContainer);
                     _CurrentInput = null;
                     _CurrentAutomationDispenser = null;
-                    Plugin.PluginLogger.LogDebug($"Output specified, link created!");
+                    Plugin.Log.LogDebug($"Output specified, link created!");
 
                     if (_PlayerMessageDisplay != null)
                         _PlayerMessageDisplay.DisplayMessage("Dispense Chest link successfully established!", 6f);
@@ -126,40 +179,44 @@ namespace DispenseChestTeleporter
             return true;
         }
 
-        [HarmonyLib.HarmonyPatch(typeof(DispenseChest), "Update")]
-        [HarmonyLib.HarmonyPostfix()]
-        private static void DispenseChest_Update_Postfix(DispenseChest __instance, AutomationItemDispenser ____systemContainer)
+        private static void SetupChestLinks(AutomationItemDispenser automationItemDispenser, AutomationItemDispenserData data)
         {
-            if (_ChestsLoaded != null && (!_ChestsLoaded.ContainsKey(__instance) || !_ChestsLoaded[__instance]))
+            if(data != null)
             {
-                ChestLink link = _ChestLinks.FirstOrDefault(c => c.InputPosition.Equals(__instance.transform.position) || c.OutputPosition.Equals(__instance.transform.position));
-                if (link != null)
+                ChestLink[] links = _ChestLinks.Where(c => c.InputPosition.Equals(data.position) || c.OutputPosition.Equals(data.position)).ToArray();
+
+                foreach(ChestLink link in links)
                 {
-                    if (link.InputPosition.Equals(__instance.transform.position))
+                    if(link.InputPosition.Equals(data.position))
                     {
-                        link.InputChest = __instance;
-                        link.InputAutomationDispenser = ____systemContainer;
-                        Plugin.PluginLogger.LogDebug($"OnDataLoadComplete: {__instance.transform.position}. IS INPUT");
+                        link.InputAutomationDispenser = automationItemDispenser;
+                        Plugin.Log.LogInfo($"SetupChestLinks - {data.position} is INPUT");
                     }
 
-                    if(link.OutputPosition.Equals(__instance.transform.position))
+                    if (link.OutputPosition.Equals(data.position))
                     {
-                        link.OutputChest = __instance;
-                        link.OutputAutomationDispenser = ____systemContainer;
-                        Plugin.PluginLogger.LogDebug($"OnDataLoadComplete: {__instance.transform.position}. IS OUTPUT");
+                        link.OutputAutomationDispenser = automationItemDispenser;
+                        Plugin.Log.LogInfo($"SetupChestLinks - {data.position} is OUTPUT");
                     }
                 }
 
-                _ChestsLoaded[__instance] = true;
+                _DispensersLoaded[automationItemDispenser] = true;
             }
         }
-
 
         [HarmonyLib.HarmonyPatch(typeof(UIPlayerMessageDisplay), "Awake")]
         [HarmonyLib.HarmonyPostfix()]
         private static void UIPlayerMessageDisplay_Awake_Postfix(UIPlayerMessageDisplay __instance)
         {
             _PlayerMessageDisplay = __instance;
+        }
+
+        [HarmonyLib.HarmonyPatch(typeof(AutomationItemDispenser), "LoadData")]
+        [HarmonyLib.HarmonyPostfix()]
+        private static void AutomationItemDispenser_LoadData_Postfix(AutomationItemDispenser __instance, AutomationItemDispenserData data)
+        {
+            if (_DispensersLoaded != null && !_DispensersLoaded.ContainsKey(__instance))
+                SetupChestLinks(__instance, data);
         }
 
         [HarmonyLib.HarmonyPatch(typeof(AutomationItemDispenser), "Tick")]
@@ -214,7 +271,8 @@ namespace DispenseChestTeleporter
                                     ____timeToNextDrop = ____timePerDrop;
                             }
                         }
-                        else if (link.OutputAutomationDispenser == __instance)
+                        
+                        if (link.OutputAutomationDispenser == __instance)
                         {
                             ____timeToNextDrop -= deltaTime;
                             if (____timeToNextDrop <= 0f && (bool)AutomationItemDispenser_TryDropItem_Method.Invoke(__instance, new object[0]))
@@ -234,6 +292,7 @@ namespace DispenseChestTeleporter
         [HarmonyLib.HarmonyPostfix()]
         private static void GameState_LoadGameStateData_Postfix(int saveSlot)
         {
+            GameSaveSlotBefore = GameSaveSlot;
             GameSaveSlot = saveSlot;
             LoadData(saveSlot);
         }
@@ -244,22 +303,27 @@ namespace DispenseChestTeleporter
         {
             SaveData(____saveSlot);
         }
-
         #endregion
 
-        private class ChestLink
+        private class OldChestLink
         {
             public SerializeableVector3 InputPosition { get; set; }
             public SerializeableVector3 OutputPosition { get; set; }
 
             [Newtonsoft.Json.JsonIgnore()]
-            public DispenseChest InputChest { get; set; }
-
-            [Newtonsoft.Json.JsonIgnore()]
             public AutomationItemDispenser InputAutomationDispenser { get; set; }
 
             [Newtonsoft.Json.JsonIgnore()]
-            public DispenseChest OutputChest { get; set; }
+            public AutomationItemDispenser OutputAutomationDispenser { get; set; }
+        }
+
+        private class ChestLink
+        {
+            public Vector3 InputPosition { get; set; }
+            public Vector3 OutputPosition { get; set; }
+
+            [Newtonsoft.Json.JsonIgnore()]
+            public AutomationItemDispenser InputAutomationDispenser { get; set; }
 
             [Newtonsoft.Json.JsonIgnore()]
             public AutomationItemDispenser OutputAutomationDispenser { get; set; }
