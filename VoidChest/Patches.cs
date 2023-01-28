@@ -183,15 +183,22 @@ namespace VoidChest
 
         [HarmonyLib.HarmonyPatch(typeof(UICraftingTabPage), "SetUpGrid")]
         [HarmonyLib.HarmonyPrefix()]
-        private static void UICraftingTabPage_SetUpGrid_Prefix(UICraftingTabPage __instance, UICraftingTab uiCraftingTab, VerticalLayoutGroup ____vertLayout)
+        private static void UICraftingTabPage_SetUpGrid_Prefix(UICraftingTab uiCraftingTab, VerticalLayoutGroup ____vertLayout)
         {
-            if(uiCraftingTab.category.titleKey.mTerm == "UI/Crafting/AutomationCategory")
+            if(uiCraftingTab != null && uiCraftingTab.category != null && uiCraftingTab.category.titleKey.mTerm == "UI/Crafting/AutomationCategory" && ____vertLayout != null && ____vertLayout.transform.childCount > 1)
             {
                 HorizontalLayoutGroup firstGroup = ____vertLayout.transform.GetChild(1).GetComponent<HorizontalLayoutGroup>();
 
-                GameObject firstSlot = firstGroup.transform.GetChild(0).gameObject;
-                GameObject newSlot = UnityEngine.Object.Instantiate(firstSlot, firstGroup.transform);
-                _DiContainer.Inject(newSlot.GetComponent<UICraftingSlot>());
+                if(firstGroup != null && firstGroup.transform.childCount > 0)
+                {
+                    GameObject firstSlot = firstGroup.transform.GetChild(0).gameObject;
+                    if(firstSlot != null)
+                    {
+                        GameObject newSlot = UnityEngine.Object.Instantiate(firstSlot, firstGroup.transform);
+                        if (_DiContainer != null)
+                            _DiContainer.Inject(newSlot.GetComponent<UICraftingSlot>());
+                    }
+                }
             }
         }
 
