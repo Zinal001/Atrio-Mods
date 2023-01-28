@@ -3,7 +3,7 @@ using System.IO;
 
 namespace DispenseChestTeleporter
 {
-    [BepInPlugin("tech.zinals.atrio.dispensechestteleporter", "Dispense Chest Teleporter", "1.0.4")]
+    [BepInPlugin("tech.zinals.atrio.dispensechestteleporter", "Dispense Chest Teleporter", "1.0.5")]
     public class Plugin : BaseUnityPlugin
     {
         internal static string PluginLocation { get; private set; }
@@ -16,6 +16,7 @@ namespace DispenseChestTeleporter
         {
             Log = Logger;
             PluginLocation = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            Configs.Init(Config);
             DispenseChestHandler.Init(PluginLocation);
         }
 

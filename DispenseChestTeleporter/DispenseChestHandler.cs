@@ -14,22 +14,13 @@ namespace DispenseChestTeleporter
         internal static int GameSaveSlotBefore = -1;
 
         private static readonly System.Reflection.MethodInfo AutomationItemDispenser_TryDropItem_Method = HarmonyLib.AccessTools.DeclaredMethod(typeof(AutomationItemDispenser), "TryDropItem");
-        private static readonly System.Reflection.MethodInfo StandardTutorialAction_UpdateTaskList_Method = HarmonyLib.AccessTools.Method(typeof(StandardTutorialAction), "UpdateTaskList");
-        private static readonly System.Reflection.MethodInfo StandardTutorialAction_OnHeartTransitionComplete_Method = HarmonyLib.AccessTools.Method(typeof(StandardTutorialAction), "OnHeartTransitionComplete");
-        private static readonly System.Reflection.MethodInfo StandardTutorialAction_OnHeartTransitionStart_Method = HarmonyLib.AccessTools.Method(typeof(StandardTutorialAction), "OnHeartTransitionStart");
-
-        private static readonly System.Reflection.EventInfo HeartBoxTransition_TransitionComplete_Event = typeof(HeartBoxTransition).GetEvent("TransitionComplete");
-        private static readonly System.Reflection.EventInfo HeartBoxController_EnteringState_Event = typeof(HeartBoxController).GetEvent("EnteringState");
-
-        //private static List<ChestLink> _ChestLinks = new List<ChestLink>();
 
         private static DispenseChest _LastChestInteracted = null;
         private static DateTime _LastChestInteractedAt = DateTime.MinValue;
-        private static DispenseChest _CurrentInput = null;
+        private static Vector3? _CurrentInputPosition = null;
         private static AutomationItemDispenser _CurrentAutomationDispenser = null;
         private static UIPlayerMessageDisplay _PlayerMessageDisplay;
 
-        //private static Dictionary<DispenseChest, bool> _ChestsLoaded = null;
         private static Dictionary<AutomationItemDispenser, bool> _DispensersLoaded = null;
 
         private static CModLib.SaveLoad.SaveManager _SaveManager;
@@ -102,25 +93,30 @@ namespace DispenseChestTeleporter
                 Plugin.Log.LogDebug($"Removed {removed} duplicate links.");
         }
 
-        private static void SetupTeleport(DispenseChest outputChest, AutomationItemDispenser outputAutomationDispenser)
+        private static int SetupTeleport(DispenseChest outputChest, AutomationItemDispenser outputAutomationDispenser)
         {
             ChestLink link = _ChestLinks.FirstOrDefault(c => c.InputAutomationDispenser == _CurrentAutomationDispenser && c.OutputAutomationDispenser == outputAutomationDispenser);
+            ChestLink link2 = _ChestLinks.FirstOrDefault(c => c.InputAutomationDispenser == outputAutomationDispenser && c.OutputAutomationDispenser == _CurrentAutomationDispenser);
 
-            if (link == null)
+
+            if (link == null && link2 == null)
             {
                 _ChestLinks.Add(new ChestLink()
                 {
-                    InputPosition = _CurrentInput.transform.position,
+                    InputPosition = _CurrentInputPosition.Value,
                     OutputPosition = outputChest.transform.position,
                     InputAutomationDispenser = _CurrentAutomationDispenser,
                     OutputAutomationDispenser = outputAutomationDispenser
                 });
+
+                return 0;
             }
-            else
+            else if(link2 != null)
             {
-                link.OutputAutomationDispenser = outputAutomationDispenser;
-                link.OutputPosition = outputChest.transform.position;
+                return 1;
             }
+
+            return 2;
         }
 
         #region Patches
@@ -131,7 +127,7 @@ namespace DispenseChestTeleporter
         {
             int removed = 0;
 
-            foreach (ChestLink link in _ChestLinks.Where(c => c.InputAutomationDispenser == ____systemContainer || c.OutputAutomationDispenser == ____systemContainer))
+            foreach (ChestLink link in _ChestLinks.Where(c => c.InputAutomationDispenser == ____systemContainer || c.OutputAutomationDispenser == ____systemContainer).ToArray())
             {
                 if (_ChestLinks.Remove(link))
                     removed++;
@@ -153,24 +149,44 @@ namespace DispenseChestTeleporter
                 _LastChestInteracted = __instance;
                 _LastChestInteractedAt = DateTime.Now;
 
-                if (_CurrentInput == null)
+                if (_CurrentInputPosition == null)
                 {
-                    _CurrentInput = __instance;
+                    _CurrentInputPosition = __instance.transform.position;
                     _CurrentAutomationDispenser = ____systemContainer;
                     Plugin.Log.LogDebug($"Input specified!");
 
                     if (_PlayerMessageDisplay != null)
-                        _PlayerMessageDisplay.DisplayMessage("Input specified successuly, select output Dispense Chest.", 6f);
+                        _PlayerMessageDisplay.DisplayMessage("Input specified successfully, select output Dispense Chest.", 6f);
                 }
-                else if (__instance != _CurrentInput)
+                else if (__instance.transform.position != _CurrentInputPosition)
                 {
-                    SetupTeleport(__instance, ____systemContainer);
-                    _CurrentInput = null;
+                    if(Configs.MaxLinkRange.Value > 0f)
+                    {
+                        float distance = Vector3.Distance(__instance.transform.position, _CurrentInputPosition.Value);
+                        if(distance > Configs.MaxLinkRange.Value)
+                        {
+                            if (_PlayerMessageDisplay != null)
+                                _PlayerMessageDisplay.DisplayMessage($"Link distance ({distance}) exceeds the maximum range of {Configs.MaxLinkRange.Value}.", 6f);
+
+                            return false;
+                        }
+                    }
+
+                    int status = SetupTeleport(__instance, ____systemContainer);
+                    _CurrentInputPosition = null;
                     _CurrentAutomationDispenser = null;
-                    Plugin.Log.LogDebug($"Output specified, link created!");
+
+                    String message = "Dispense Chest link successfully established!";
+
+                    if (status == 0)
+                        Plugin.Log.LogDebug($"Output specified, link created!");
+                    else if (status == 1)
+                        message = "An opposite link already exists.";
+                    else
+                        message = "This link is already setup.";
 
                     if (_PlayerMessageDisplay != null)
-                        _PlayerMessageDisplay.DisplayMessage("Dispense Chest link successfully established!", 6f);
+                        _PlayerMessageDisplay.DisplayMessage(message, 6f);
                 }
 
                 return false;
@@ -190,13 +206,13 @@ namespace DispenseChestTeleporter
                     if(link.InputPosition.Equals(data.position))
                     {
                         link.InputAutomationDispenser = automationItemDispenser;
-                        Plugin.Log.LogInfo($"SetupChestLinks - {data.position} is INPUT");
+                        Plugin.Log.LogDebug($"SetupChestLinks - {data.position} is INPUT");
                     }
 
                     if (link.OutputPosition.Equals(data.position))
                     {
                         link.OutputAutomationDispenser = automationItemDispenser;
-                        Plugin.Log.LogInfo($"SetupChestLinks - {data.position} is OUTPUT");
+                        Plugin.Log.LogDebug($"SetupChestLinks - {data.position} is OUTPUT");
                     }
                 }
 
